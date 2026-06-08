@@ -43,7 +43,7 @@ Modela a volatilidade meteorológica executando 1000 iterações da Programaçã
 ---
 
 ##  Estrutura do Repositório
-```text
+
 ├── data/
 │   └── raw/
 │       ├── data_loader.py          # Script de carregamento de dados geográficos
