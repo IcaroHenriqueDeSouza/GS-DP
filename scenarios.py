@@ -9,6 +9,7 @@ class Scenario:
     cost: list[list[int]]
     risk: list[list[float]]
     probability: list[list[float]]
+    valid_cells: int  # Campo obrigatório para sincronizar com o novo DP
 
 
 def generate_satellite_grid(
@@ -26,13 +27,11 @@ def generate_satellite_grid(
     probability_grid = []
 
     for i in range(rows):
-
         cost_row = []
         risk_row = []
         probability_row = []
 
         for j in range(cols):
-
             # Simulação de município inacessível
             if random.random() < blocked_probability:
                 cost = -1
@@ -40,11 +39,7 @@ def generate_satellite_grid(
                 cost = random.randint(5, 50)
 
             risk = round(random.uniform(0.0, 1.0), 2)
-
-            probability = round(
-                random.uniform(0.1, 0.9),
-                2
-            )
+            probability = round(random.uniform(0.1, 0.9), 2)
 
             cost_row.append(cost)
             risk_row.append(risk)
@@ -56,19 +51,18 @@ def generate_satellite_grid(
 
     # Garante origem e destino acessíveis
     cost_grid[0][0] = max(cost_grid[0][0], 5)
-    cost_grid[rows - 1][cols - 1] = max(
-        cost_grid[rows - 1][cols - 1],
-        5
-    )
+    cost_grid[rows - 1][cols - 1] = max(cost_grid[rows - 1][cols - 1], 5)
 
     return Scenario(
         cost=cost_grid,
         risk=risk_grid,
-        probability=probability_grid
+        probability=probability_grid,
+        valid_cells=rows * cols  # Em cenários sintéticos, todas as células são válidas
     )
 
 
 def generate_small_scenario() -> Scenario:
+    """Gera uma grade 5x5 para relatórios rápidos e heatmaps."""
     return generate_satellite_grid(
         rows=5,
         cols=5,
@@ -78,6 +72,7 @@ def generate_small_scenario() -> Scenario:
 
 
 def generate_medium_scenario() -> Scenario:
+    """Gera uma grade 20x20 para testes intermediários."""
     return generate_satellite_grid(
         rows=20,
         cols=20,
@@ -87,6 +82,7 @@ def generate_medium_scenario() -> Scenario:
 
 
 def generate_large_scenario() -> Scenario:
+    """Gera uma grade 50x50 para testes pesados."""
     return generate_satellite_grid(
         rows=50,
         cols=50,
@@ -94,34 +90,16 @@ def generate_large_scenario() -> Scenario:
         seed=42
     )
 
+
 def generate_random_scenario(
     size: int,
     blocked_probability: float = 0.05,
     seed: int | None = 42
 ) -> Scenario:
-    """
-    Gera uma grade quadrada NxN para benchmarks.
-    """
-
+    """Gera uma grade quadrada NxN customizada para benchmarks de escalabilidade."""
     return generate_satellite_grid(
         rows=size,
         cols=size,
         blocked_probability=blocked_probability,
         seed=seed
     )
-
-if __name__ == "__main__":
-
-    scenario = generate_small_scenario()
-
-    print("COST")
-    for row in scenario.cost:
-        print(row)
-
-    print("\nRISK")
-    for row in scenario.risk:
-        print(row)
-
-    print("\nPROBABILITY")
-    for row in scenario.probability:
-        print(row)

@@ -70,7 +70,8 @@ def monte_carlo_simulation(
 
         cost, _, _ = dp_bottom_up(
             scenario.cost,
-            simulated_risk
+            simulated_risk,
+            scenario.valid_cells
         )
 
         if cost != float("inf"):

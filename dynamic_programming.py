@@ -80,7 +80,69 @@ def dp_bottom_up(
         dp
     )
 
+def dp_top_down(
+    cost_grid: list[list[float]],
+    risk_grid: list[list[float]],
+    valid_cells: int
+):
+    
+    if not cost_grid or not cost_grid[0]:
+        return inf, [], []
 
+    rows = len(cost_grid)
+    cols = len(cost_grid[0])
+
+    memo = [[None for _ in range(cols)] for _ in range(rows)]
+    parent = [[None for _ in range(cols)] for _ in range(rows)]
+
+    def solve(i, j):
+        if i == 0 and j == 0:
+            if cost_grid[0][0] == -1 or cost_grid[0][0] == inf:
+                return inf
+            return weighted_cost(cost_grid[0][0], risk_grid[0][0])
+        
+        if i < 0 or j < 0 or cost_grid[i][j] == -1 or cost_grid[i][j] == inf:
+            return inf
+
+        if memo[i][j] is not None:
+            return memo[i][j]
+
+        current_cost = weighted_cost(cost_grid[i][j], risk_grid[i][j])
+        
+        from_up = solve(i - 1, j)
+        from_left = solve(i, j - 1)
+
+        if from_up == inf and from_left == inf:
+            memo[i][j] = inf
+            return inf
+
+        if from_up < from_left:
+            memo[i][j] = from_up + current_cost
+            parent[i][j] = (i - 1, j)
+        else:
+            memo[i][j] = from_left + current_cost
+            parent[i][j] = (i, j - 1)
+
+        return memo[i][j]
+
+    target_idx = valid_cells - 1
+    dest_row = target_idx // cols
+    dest_col = target_idx % cols
+
+    optimal_cost = solve(dest_row, dest_col)
+
+    if optimal_cost == inf:
+        return inf, [], memo
+
+    for r in range(rows):
+        for c in range(cols):
+            if memo[r][c] is None:
+                solve(r, c)
+            if memo[r][c] is None:
+                memo[r][c] = inf
+
+    path = reconstruct_path(parent, dest_row, dest_col)
+    return optimal_cost, path, memo
 
 from data.raw.data_loader import build_geospatial_grid
 

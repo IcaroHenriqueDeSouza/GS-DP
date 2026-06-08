@@ -1,13 +1,14 @@
 from math import inf
 
 
-def weighted_cost(cost: int, risk: float) -> float:
+def weighted_cost(cost: float, risk: float) -> float:
     return cost * (1 + risk)
 
 
 def brute_force_path(
-    cost_grid: list[list[int]],
-    risk_grid: list[list[float]]
+    cost_grid: list[list[float]],
+    risk_grid: list[list[float]],
+    valid_cells: int 
 ):
     """
     Retorna:
@@ -15,15 +16,17 @@ def brute_force_path(
         melhor_caminho
         total_chamadas
     """
-
     if not cost_grid or not cost_grid[0]:
         return inf, [], 0
 
     rows = len(cost_grid)
     cols = len(cost_grid[0])
 
-    recursive_calls = 0
+    target_idx = valid_cells - 1
+    dest_row = target_idx // cols
+    dest_col = target_idx % cols
 
+    recursive_calls = 0
     best_cost = inf
     best_path = []
 
@@ -39,52 +42,40 @@ def brute_force_path(
 
         recursive_calls += 1
 
-        # célula inválida
         if row >= rows or col >= cols:
             return
 
-        # bloqueada
-        if cost_grid[row][col] == -1:
+
+        if cost_grid[row][col] == -1 or cost_grid[row][col] == inf:
             return
 
+   
         current_cost += weighted_cost(
             cost_grid[row][col],
             risk_grid[row][col]
         )
 
-        current_path = current_path + [(row, col)]
 
-        # destino
-        if row == rows - 1 and col == cols - 1:
-
-            if current_cost < best_cost:
-                best_cost = current_cost
-                best_path = current_path
-
+        if current_cost >= best_cost:
             return
 
-        # direita
-        dfs(
-            row,
-            col + 1,
-            current_cost,
-            current_path
-        )
+        new_path = current_path + [(row, col)]
 
-        # baixo
-        dfs(
-            row + 1,
-            col,
-            current_cost,
-            current_path
-        )
+  
+        if row == dest_row and col == dest_col:
+            if current_cost < best_cost:
+                best_cost = current_cost
+                best_path = new_path
+            return
 
-    dfs(
-        0,
-        0,
-        0,
-        []
-    )
+
+        dfs(row, col + 1, current_cost, new_path)
+
+
+        dfs(row + 1, col, current_cost, new_path)
+
+ 
+    dfs(0, 0, 0.0, [])
 
     return (
         best_cost,
@@ -92,25 +83,19 @@ def brute_force_path(
         recursive_calls
     )
 
+
 if __name__ == "__main__":
+    from scenarios import generate_small_scenario
 
-    cost_grid = [
-        [1, 3, 1],
-        [1, 5, 1],
-        [4, 2, 1]
-    ]
-
-    risk_grid = [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0]
-    ]
-
+    scenario = generate_small_scenario()
+    
     cost, path, calls = brute_force_path(
-        cost_grid,
-        risk_grid
+        scenario.cost,
+        scenario.risk,
+        scenario.valid_cells
     )
-
-    print("Menor custo:", cost)
-    print("Melhor caminho:", path)
-    print("Chamadas:", calls)
+    
+    print("=== Teste Local Força Bruta ===")
+    print(f"Melhor Custo: {cost}")
+    print(f"Caminho: {path}")
+    print(f"Chamadas Recursivas: {calls}")

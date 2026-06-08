@@ -30,7 +30,8 @@ def generate_dp_reports():
 
     _, _, dp_table = dp_bottom_up(
         scenario.cost,
-        scenario.risk
+        scenario.risk,
+        scenario.valid_cells
     )
 
     plot_dp_heatmap(
@@ -83,31 +84,21 @@ def generate_benchmark_reports():
     )
 
     print(
-        "✓ Relatórios de benchmark gerados"
+        "✓ Gráficos de Benchmarking gerados"
     )
 
 
 def main():
-
-    print(
-        "\nGerando relatórios...\n"
-    )
-
+    print("Iniciando geração de relatórios técnicos...")
+    print("=" * 50)
+    
     generate_dp_reports()
-
     generate_monte_carlo_reports()
-
     generate_benchmark_reports()
-
-    print(
-        "\nTodos os relatórios foram gerados."
-    )
-
-    print(
-        "Verifique a pasta outputs/"
-    )
+    
+    print("=" * 50)
+    print("Sucesso! Todos os artefatos foram salvos na pasta 'outputs/'.")
 
 
 if __name__ == "__main__":
-
     main()

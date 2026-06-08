@@ -28,8 +28,8 @@ def monitor_algorithm(
 ) -> ExecutionResult:
     """
     Executa um algoritmo e mede:
-    - Tempo de execução
-    - Pico de memória
+    - Tempo de execução usando time.perf_counter()
+    - Pico de memória via tracemalloc
     - Número de chamadas (quando informado)
     """
 
@@ -70,22 +70,20 @@ def benchmark_algorithm(
     scenario_generator,
     sizes: list[int]
 ) -> BenchmarkResult:
-    """
-    Executa benchmarks para diferentes tamanhos
-    de cenário e coleta métricas de desempenho.
-    """
-
     execution_times = []
     memory_usage = []
 
     for size in sizes:
-
+        
         scenario = scenario_generator(size)
+
+        total_cells = size * size
 
         execution = monitor_algorithm(
             algorithm,
             scenario.cost,
-            scenario.risk
+            scenario.risk,
+            total_cells  
         )
 
         execution_times.append(
@@ -118,30 +116,46 @@ def benchmark_algorithm(
 
 
 if __name__ == "__main__":
-
     from scenarios import (
         generate_small_scenario,
         generate_random_scenario
     )
-
-    from dynamic_programming import dp_bottom_up
+    from dynamic_programming import dp_bottom_up, dp_top_down
 
     scenario = generate_small_scenario()
 
-    execution = monitor_algorithm(
+    execution_bu = monitor_algorithm(
         dp_bottom_up,
         scenario.cost,
-        scenario.risk
+        scenario.risk,
+        25
     )
 
-    print("\nExecução única:")
-    print(execution)
+    print("\n=== Execução Única (Bottom-Up) ===")
+    print(f"Tempo: {execution_bu.execution_time_ms:.4f} ms")
+    print(f"Memória: {execution_bu.memory_mb:.4f} MB")
 
+    execution_td = monitor_algorithm(
+        dp_top_down,
+        scenario.cost,
+        scenario.risk,
+        25
+    )
+    print("\n=== Execução Única (Top-Down com Memoização) ===")
+    print(f"Tempo: {execution_td.execution_time_ms:.4f} ms")
+    print(f"Memória: {execution_td.memory_mb:.4f} MB")
+
+    sizes_to_test = [3, 5, 10, 20]
+    
     benchmark = benchmark_algorithm(
         dp_bottom_up,
         generate_random_scenario,
-        [5, 10, 20]
+        sizes_to_test
     )
 
-    print("\nBenchmark:")
-    print(benchmark)
+    print("\n=== Relatório de Benchmark (Bottom-Up) ===")
+    print(f"Tamanhos testados: {benchmark.sizes}")
+    print(f"Tempos por tamanho (ms): {[round(t, 4) for t in benchmark.execution_times]}")
+    print(f"Memória por tamanho (MB): {[round(m, 4) for m in benchmark.memory_usage]}")
+    print(f"Média de Tempo: {benchmark.average_time_ms:.4f} ms")
+    print(f"Média de Memória: {benchmark.average_memory_mb:.4f} MB")
